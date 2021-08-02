@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 
 warnings.filterwarnings("ignore")
 
-#Generate a pandas dataframe based on the type of data you want to see
+#Scrape HTML table and generate a pandas dataframe based on the specified type of data inputted
 def getList(listType):
     if (listType == 'player'):
         url = "https://gol.gg/players/list/season-ALL/split-ALL/tournament-LCS%20Summer%202021/"
@@ -119,14 +119,42 @@ def compareTeams(t1, t2):
     print('Overall Score for ' + t2 + ": " + str(generateTeamRating(t2)))
 
 
+#Retrieves a list of all players at a specified role
+def getPlayers(role):
+    df = retrieveList('player')
+    df_mask = df['Position'] == role
+    filtered_df = df[df_mask]
+    
+    df_no_indices = filtered_df['Player'].to_string(index=False, header = False)
+    
+    print('Current Players at Position ' + role + ":")
+    print(df_no_indices)
+    
+#Retrieves a list of all teams currently competing in the LCS Summer split
+def getTeams():
+    df = retrieveList('team')
+    
+    df_no_indices = df['Name'].to_string(index = False, header = False)
+    
+    print('Current Teams competing: ')
+    print(df_no_indices)
+
+
 #Takes an input for specific position and outputs the top 5 players with the highest KDA
 def highestKDA(role):
     df = retrieveList('player')
     df_mask = df['Position'] == role
     filtered_df = df[df_mask]
     
+    filtered_df['Games'] = pd.to_numeric(filtered_df['Games'])
+    
+    df_mask = filtered_df['Games'] >= 15
+    
+    filtered_df = filtered_df[df_mask]
+    
     sorted = filtered_df.sort_values('KDA', ascending = False).head(5)
-    print(sorted['KDA'])
+    print('Current ' + role + ' players with highest KDA: ')
+    print(sorted['KDA'].to_string(header = False))
     
 #Takes an input for a specific position and outputs the top 5 players based on their win percentage
 def highestWinRate(role):
@@ -142,9 +170,11 @@ def highestWinRate(role):
     
     filtered_df = filtered_df[df_mask]
     
+    
     filtered_df['Win rate'] = filtered_df['Win rate'].str[:-1].astype(float)
     sorted = filtered_df.sort_values('Win rate', ascending = False).head(5)
-    print(sorted['Win rate'])
+    print('Current ' + role + ' players with highest win rate: ')
+    print(sorted['Win rate'].to_string(header = False))
     
 #Outputs the top 5 teams based on their K:D ratio
 def highestKD():
