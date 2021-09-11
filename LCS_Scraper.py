@@ -5,6 +5,7 @@ Created on Tue Jul 27 23:00:53 2021
 
 @author: nathannguyen
 """
+#this is for hwzero
 
 import requests
 import pandas as pd
